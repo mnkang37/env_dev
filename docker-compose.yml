@@ -1,0 +1,28 @@
+version: "3.8"
+
+services: 
+  db: 
+       image: postgres 
+       environment:
+           - POSTGRES_DB=postgres
+           - POSTGRES_USER=postgres
+           - POSTGRES_PASSWORD=postgres
+
+  django: 
+       build: ./django
+       command: python manage.py runserver 0.0.0.0:8000 
+       volumes:
+           - ./django:/app/django 
+       ports:
+           - "8000:8000" 
+       depends_on:
+           - db
+
+  front:
+       build: ./react 
+       working_dir: /app/front
+       command: npm start 
+       volumes:
+         - ./react:/app
+       ports:
+         - "3000:3000"
