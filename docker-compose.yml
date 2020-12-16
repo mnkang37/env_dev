@@ -1,28 +1,34 @@
 version: "3.8"
 
 services: 
-  db: 
-       image: postgres 
-       environment:
-           - POSTGRES_DB=postgres
-           - POSTGRES_USER=postgres
-           - POSTGRES_PASSWORD=postgres
 
-  django: 
-       build: ./django
-       command: python manage.py runserver 0.0.0.0:8000 
-       volumes:
-           - ./django:/app/django 
-       ports:
-           - "8000:8000" 
-       depends_on:
-           - db
-
+  db:
+    image: postgres
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+  web:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/code
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db 
   front:
-       build: ./react 
-       working_dir: /app/front
-       command: npm start 
-       volumes:
-         - ./react:/app
-       ports:
-         - "3000:3000"
+    build:
+      context: ./front     # client 디렉토리 하위에 Dockerfile을 사용
+    container_name: front  # container 이름
+    restart: "on-failure"
+    ports:
+      - "3000:3000"           
+    volumes:
+      - './front:/app'     # 소스 디렉토리 공유
+      - '/app/node_modules'
+    environment: 
+      - NODE_ENV=development 
+      - CHOKIDAR_USEPOLLING=true # HMR을 위해 필요한 설정
+    stdin_open: true             # react-script 3.4.1 부터 필요
+    tty: true
